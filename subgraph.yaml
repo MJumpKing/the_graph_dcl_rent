@@ -8,28 +8,18 @@ dataSources:
     source:
       address: "0x3a1469499d0be105d4f77045ca403a5f6dc2f3f5"
       abi: Contract
+      startBlock: 16070889
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - SetPrice
-        - OwnershipTransferred
-        - Transfer
-        - Approval
-        - ApprovalForAll
+        - acceptListing
       abis:
         - name: Contract
           file: ./abis/Contract.json
       eventHandlers:
-        - event: SetPrice(uint256,uint256)
-          handler: handleSetPrice
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
+        - event: AssetRented(indexed address,indexed uint256,address,address,address,uint256,uint256,bool,address,bytes)
+          handler: handleAssetRented
+
       file: ./src/contract.ts

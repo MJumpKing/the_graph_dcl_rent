@@ -1,89 +1,35 @@
 import {
-  SetPrice as SetPriceEvent,
+  AssetRented as AssetRentedEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
-  Transfer as TransferEvent,
-  Approval as ApprovalEvent,
-  ApprovalForAll as ApprovalForAllEvent
+
 } from "../generated/Contract/Contract"
 import {
-  SetPrice,
-  OwnershipTransferred,
-  Transfer,
-  Approval,
-  ApprovalForAll
+  Rent,
+  Land
 } from "../generated/schema"
 
-export function handleSetPrice(event: SetPriceEvent): void {
-  let entity = new SetPrice(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity._tokenId = event.params._tokenId
-  entity._price = event.params._price
+export function handleAssetRented(event: AssetRentedEvent): void {
+  let rent = Rent.load(event.transaction.hash.toHex());
+  if (rent == null) {
+    rent = new Rent(event.transaction.hash.toHex());
+  }
+  // if (event.params._lessor == n)
+  let land = Land.load(event.params._tokenId.toString());
+  if (land === null) {
+    land = new Land(event.params._tokenId.toString());
+    land.save()
+  }
+  land.contract_address = event.params._contractAddress
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  rent.land = land.id;
+  rent.rentDays = event.params._rentalDays
+  rent.lessor = event.params._lessor
+  rent.tenant = event.params._tenant
+  rent.pricePerDay = event.params._pricePerDay
 
-  entity.save()
+  rent.date = event.block.timestamp;
+  rent.save()
 }
 
-export function handleOwnershipTransferred(
-  event: OwnershipTransferredEvent
-): void {
-  let entity = new OwnershipTransferred(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousOwner = event.params.previousOwner
-  entity.newOwner = event.params.newOwner
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
 
-  entity.save()
-}
-
-export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity._from = event.params._from
-  entity._to = event.params._to
-  entity._tokenId = event.params._tokenId
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleApproval(event: ApprovalEvent): void {
-  let entity = new Approval(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity._owner = event.params._owner
-  entity._approved = event.params._approved
-  entity._tokenId = event.params._tokenId
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity._owner = event.params._owner
-  entity._operator = event.params._operator
-  entity._approved = event.params._approved
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
